@@ -66,7 +66,7 @@ prompt_segment() {
   if [[ $CURRENT_BG != 'NONE' && $1 != $CURRENT_BG ]]; then
     echo -n " %{$bg%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR%{$fg%} "
   else
-    echo -n "%{$bg%}%{$fg%} "
+    echo -n "%{$bg%}%{$fg%}"
   fi
   CURRENT_BG=$1
   [[ -n $3 ]] && echo -n $3
@@ -89,7 +89,8 @@ prompt_end() {
 # Context: user@hostname (who am I and where am I)
 prompt_context() {
   if [[ "$USER" != "$DEFAULT_USER" || -n "$SSH_CLIENT" ]]; then
-    prompt_segment black default "%(!.%{%F{yellow}%}.)%n@%m"
+    prompt_segment black default "%(!.%{%F{yellow}%}.)"
+    # Ming removed the user_name at the end
   fi
 }
 
@@ -201,11 +202,12 @@ prompt_dir() {
   prompt_segment blue $CURRENT_FG '%~'
 }
 
+# Disable the native virtualenv prompt
+export VIRTUAL_ENV_DISABLE_PROMPT=1
 # Virtualenv: current working virtualenv
 prompt_virtualenv() {
-  local virtualenv_path="$VIRTUAL_ENV"
-  if [[ -n $virtualenv_path && -n $VIRTUAL_ENV_DISABLE_PROMPT ]]; then
-    prompt_segment blue black "(`basename $virtualenv_path`)"
+  if [[ -n "$VIRTUAL_ENV" ]]; then
+    prompt_segment white black "`basename $VIRTUAL_ENV`"
   fi
 }
 
@@ -238,11 +240,8 @@ prompt_aws() {
 
 ## Main prompt
 build_prompt() {
-  RETVAL=$?
-  prompt_status
-  prompt_virtualenv
-  prompt_aws
   prompt_context
+  prompt_virtualenv
   prompt_dir
   prompt_git
   prompt_bzr
@@ -250,4 +249,11 @@ build_prompt() {
   prompt_end
 }
 
+build_right_prompt() {
+  RETVAL=$?
+  prompt_status
+}
+
 PROMPT='%{%f%b%k%}$(build_prompt) '
+RPROMPT='%D{%L:%M:%S} $(build_right_prompt)'
+# %p : AM and PM
