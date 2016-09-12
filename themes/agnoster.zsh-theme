@@ -192,9 +192,15 @@ prompt_dir() {
 
 # Virtualenv: current working virtualenv
 prompt_virtualenv() {
-  local virtualenv_path="$VIRTUAL_ENV"
-  if [[ -n $virtualenv_path && -n $VIRTUAL_ENV_DISABLE_PROMPT ]]; then
-    prompt_segment blue black "(`basename $virtualenv_path`)"
+  if [[ -n $VIRTUAL_ENV_DISABLE_PROMPT ]]; then
+
+    local IN_VENV=`python -c "import sys; print(hasattr(sys, 'real_prefix'))"`
+    # Calculate in Python, because using $VIRTUAL_ENV is not reliable.
+    # http://stackoverflow.com/questions/1871549/python-determine-if-running-inside-virtualenv
+
+    if [[ "$IN_VENV" == "True" ]]; then
+      prompt_segment blue black "(`basename $VIRTUAL_ENV`)"
+    fi
   fi
 }
 
